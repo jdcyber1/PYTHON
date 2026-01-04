@@ -1,83 +1,130 @@
-AIM
-To detect and match features between two images using SIFT, SURF, and ORB algorithms, 
-visualize the key points, and display the feature matches.
-ALGORITHM
-Step 1: Load Images
-Load two images for feature detection and matching.
-Step 2: SIFT Detection:
-i) Detect keypoints and compute descriptors using the SIFT algorithm
-ii) Display keypoints on both images.
-iii) Match features between the two images and display the matches.
-Step 3: SURF Detection (optional, commented out in code):
-i) Detect keypoints and compute descriptors using the SURF algorithm.
-ii) Display keypoints on both images.
-iii) Match features and display the matches.
-Step 4: ORB Detection
-i)Detect keypoints and compute descriptors using the ORB algorithm.
-ii) Display keypoints on both images.
-iii) Match features and display the matches.
-Step 5: Display Results
-For each feature detection algorithm, display the key points and matches between the 
-two images.
-CODING
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
-def load_images(img1_path, img2_path): 
-img1 = cv2.imread(img1_path)
-img2 = cv2.imread(img2_path) 
-return img1, img2
-def display_keypoints(image, keypoints, title):
-image_with_keypoints = cv2.drawKeypoints(image, keypoints, None, 
-flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
-plt.imshow(cv2.cvtColor(image_with_keypoints, cv2.COLOR_BGR2RGB)) 
-plt.title(title)
-plt.axis('off') 
-plt.show()
-def match_features(des1, des2, method):
-bf = cv2.BFMatcher(cv2.NORM_L2 if method != 'ORB' else cv2.NORM_HAMMING, 
-crossCheck=True)
-matches = bf.match(des1, des2)
-matches = sorted(matches, key=lambda x: x.distance) 
-return matches
-def display_matches(img1, img2, kp1, kp2, matches, title):
-matched_image = cv2.drawMatches(img1, kp1, img2, kp2, matches[:50], None, flags=2) 
-plt.imshow(cv2.cvtColor(matched_image, cv2.COLOR_BGR2RGB))
-plt.title(title) 
-plt.axis('off') 
-plt.show()
-defsift_detection(img1, img2): 
-sift = cv2.SIFT_create()
-kp1, des1 = sift.detectAndCompute(img1, None) 
-kp2, des2 = sift.detectAndCompute(img2, None)
-display_keypoints(img1, kp1, "SIFT Keypoints - Image 1") 
-display_keypoints(img2, kp2, "SIFT Keypoints - Image 2")
-matches = match_features(des1, des2, method='SIFT') 
-display_matches(img1, img2, kp1, kp2, matches, "SIFT Feature Matching")
-defsurf_detection(img1, img2):
-surf = cv2.xfeatures2d.SURF_create(400)
-kp1, des1 = surf.detectAndCompute(img1, None) 
-kp2, des2 = surf.detectAndCompute(img2, None)
-display_keypoints(img1, kp1, "SURF Keypoints - Image 1") 
-display_keypoints(img2, kp2, "SURF Keypoints - Image 2")
-matches = match_features(des1, des2, method='SURF') 
-display_matches(img1, img2, kp1, kp2, matches, "SURF Feature Matching")
-def orb_detection(img1, img2): 
-orb = cv2.ORB_create()
-kp1, des1 = orb.detectAndCompute(img1, None) 
-kp2, des2 = orb.detectAndCompute(img2, None)
-display_keypoints(img1, kp1, "ORB Keypoints - Image 1") 
-display_keypoints(img2, kp2, "ORB Keypoints - Image 2")
-matches = match_features(des1, des2, method='ORB') display_matches(img1,
-img2, kp1, kp2, matches, "ORB Feature Matching")
-def feature_detection_demo(img1_path, img2_path): img1, img2 
-= load_images(img1_path, img2_path)
-print("SIFT Feature Detection and Matching...") sift_detection(img1,
-img2)
-# print("SURF Feature Detection and Matching...") # 
-surf_detection(img1, img2)
-print("ORB Feature Detection and Matching...") 
-orb_detection(img1, img2)
-img1_path = 'test1.jpg' 
-img2_path = 'test2.jpg'
-feature_detection_demo(img1_path, img2_path)
+import zlib
+import os
+
+
+def load_image(image_path):
+    image = cv2.imread(image_path)
+    grayscale_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    return image, grayscale_image
+
+
+def display_image(image, title):
+    plt.imshow(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+    plt.title(title)
+    plt.axis('off')
+    plt.show()
+
+
+def jpeg_compression(image_path, quality):
+    image = cv2.imread(image_path)
+    compressed_image_path = "compressed_image.jpg"
+
+    cv2.imwrite(
+        compressed_image_path,
+        image,
+        [int(cv2.IMWRITE_JPEG_QUALITY), quality]
+    )
+
+    original_size = os.path.getsize(image_path)
+    compressed_size = os.path.getsize(compressed_image_path)
+
+    print(f"Original size: {original_size / 1024:.2f} KB")
+    print(f"Compressed size (JPEG, quality={quality}): {compressed_size / 1024:.2f} KB")
+
+    compressed_image = cv2.imread(compressed_image_path)
+    display_image(compressed_image, f"JPEG Compression (Quality={quality})")
+
+
+def png_compression(image_path, compression_level):
+    image = cv2.imread(image_path)
+    compressed_image_path = "compressed_image.png"
+
+    cv2.imwrite(
+        compressed_image_path,
+        image,
+        [int(cv2.IMWRITE_PNG_COMPRESSION), compression_level]
+    )
+
+    original_size = os.path.getsize(image_path)
+    compressed_size = os.path.getsize(compressed_image_path)
+
+    print(f"Original size: {original_size / 1024:.2f} KB")
+    print(
+        f"Compressed size (PNG, level={compression_level}): "
+        f"{compressed_size / 1024:.2f} KB"
+    )
+
+    compressed_image = cv2.imread(compressed_image_path)
+    display_image(compressed_image, f"PNG Compression (Level={compression_level})")
+
+
+def run_length_encoding(image):
+    pixels = image.flatten()
+    compressed_data = []
+    count = 1
+
+    for i in range(1, len(pixels)):
+        if pixels[i] == pixels[i - 1]:
+            count += 1
+        else:
+            compressed_data.append((pixels[i - 1], count))
+            count = 1
+
+    compressed_data.append((pixels[-1], count))
+    return compressed_data
+
+
+def rle_compression(image_path):
+    _, grayscale_image = load_image(image_path)
+
+    rle_data = run_length_encoding(grayscale_image)
+    original_size = grayscale_image.size
+    compressed_size = len(rle_data)
+
+    print(f"Original size (pixels): {original_size}")
+    print(f"Compressed size (RLE): {compressed_size}")
+    print(f"First 10 runs: {rle_data[:10]}")
+
+
+def zlib_compression(image_path):
+    _, grayscale_image = load_image(image_path)
+
+    original_size = grayscale_image.nbytes
+    compressed_data = zlib.compress(grayscale_image.tobytes())
+    compressed_size = len(compressed_data)
+
+    print(f"Original size (bytes): {original_size}")
+    print(f"Compressed size (zlib): {compressed_size}")
+
+    decompressed_data = zlib.decompress(compressed_data)
+    decompressed_image = np.frombuffer(
+        decompressed_data,
+        dtype=np.uint8
+    ).reshape(grayscale_image.shape)
+
+    plt.imshow(decompressed_image, cmap='gray')
+    plt.title("Decompressed Image (zlib)")
+    plt.axis('off')
+    plt.show()
+
+
+def image_compression_demo(image_path):
+    image, _ = load_image(image_path)
+    display_image(image, "Original Image")
+
+    jpeg_compression(image_path, quality=50)
+    png_compression(image_path, compression_level=9)
+
+    print("\nRun-Length Encoding Compression:")
+    rle_compression(image_path)
+
+    print("\nLossless Compression (zlib):")
+    zlib_compression(image_path)
+
+
+if __name__ == "__main__":
+    image_compression_demo("test1.jpg")
+
